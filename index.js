@@ -1,7 +1,7 @@
 require('dotenv').config();
 var express = require("express");
 var nunjucks = require("nunjucks");
-var http = require('http');
+var http = require('https');
 var util = require('util');
 var app = express();
 
@@ -16,7 +16,6 @@ app.get('/', function(req, res) {
   res.render('index.html', {app_url: process.env.APP_URL});
 });
 
-// https://www.googleapis.com/customsearch/v1?searchType=image&key=AIzaSyDuGfoO5e4IjFH_YZ3orljuvh7vSuJ0CXk&cx=005649931137423518614:jm7kxu1ddvo&q=google&start=5
 var urlTemplate = 'https://www.googleapis.com/customsearch/v1?searchType=image&key=AIzaSyDuGfoO5e4IjFH_YZ3orljuvh7vSuJ0CXk&cx=005649931137423518614:jm7kxu1ddvo&q=%s&start=%d';
 
 app.get('/api/imagesearch/:term', function(req, res) {
@@ -25,9 +24,9 @@ app.get('/api/imagesearch/:term', function(req, res) {
         "term": term,
         "when": Date().toString()
     };
-    queryTerms.push(history);
+    queryTerms.unshift(history);
 
-    url = util.format(urlTemplate, term, req.query.offset || 1);
+    var url = util.format(urlTemplate, term, req.query.offset || 1);
     http.get(url, function(http_res){
         var body = '';
 
@@ -52,7 +51,7 @@ app.get('/api/imagesearch/:term', function(req, res) {
 });
 
 app.get('/api/latest/imagesearch', function(req, res) {
-    res.json(queryTerms.slice(-10));
+    res.json(queryTerms.slice(0, 10));
 });
 
 app.listen(process.env.PORT, function(){
