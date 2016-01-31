@@ -1,14 +1,58 @@
 require('dotenv').config();
 var express = require("express");
+var nunjucks = require("nunjucks");
 var http = require('http');
+var util = require('util');
 var app = express();
 
-// https://www.googleapis.com/customsearch/v1?searchType=image&key=AIzaSyDuGfoO5e4IjFH_YZ3orljuvh7vSuJ0CXk&cx=005649931137423518614:jm7kxu1ddvo&q=google
+var queryTerms = [];
 
-var url = 'http://graph.facebook.com/517267866/?fields=picture';
+nunjucks.configure('templates', {
+    autoescape: true,
+    express: app
+});
 
 app.get('/', function(req, res) {
-  res.sendfile(__dirname + '/index.html');
+  res.render('index.html', {app_url: process.env.APP_URL});
+});
+
+// https://www.googleapis.com/customsearch/v1?searchType=image&key=AIzaSyDuGfoO5e4IjFH_YZ3orljuvh7vSuJ0CXk&cx=005649931137423518614:jm7kxu1ddvo&q=google&start=5
+var urlTemplate = 'https://www.googleapis.com/customsearch/v1?searchType=image&key=AIzaSyDuGfoO5e4IjFH_YZ3orljuvh7vSuJ0CXk&cx=005649931137423518614:jm7kxu1ddvo&q=%s&start=%d';
+
+app.get('/api/imagesearch/:term', function(req, res) {
+    var term = req.params.term;
+    var history = {
+        "term": term,
+        "when": Date().toString()
+    };
+    queryTerms.push(history);
+
+    url = util.format(urlTemplate, term, req.query.offset || 1);
+    http.get(url, function(http_res){
+        var body = '';
+
+        http_res.on('data', function(chunk){
+            body += chunk;
+        });
+
+        http_res.on('end', function(){
+            var googleResponse = JSON.parse(body);
+            res.json(googleResponse.items.map(function(item) {
+                return {
+                    url: item.link,
+                    snippet: item.snippet,
+                    thumbnail: item.image.thumbnailLink,
+                    context: item.image.contextLink
+                };
+            }));
+        });
+    }).on('error', function(e){
+          console.log("Got an error: ", e);
+    });
+});
+
+app.get('/api/latest/imagesearch', function(req, res) {
+    res.json(queryTerms.slice(-10));
 });
 
 app.listen(process.env.PORT, function(){
@@ -16,17 +60,4 @@ app.listen(process.env.PORT, function(){
   .IP + ':' + process.env.PORT);
 });
 
-// http.get(url, function(res){
-//     var body = '';
 
-//     res.on('data', function(chunk){
-//         body += chunk;
-//     });
-
-//     res.on('end', function(){
-//         var fbResponse = JSON.parse(body);
-//         console.log("Got a response: ", fbResponse.picture);
-//     });
-// }).on('error', function(e){
-//       console.log("Got an error: ", e);
-// });

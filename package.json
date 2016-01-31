@@ -1,0 +1,27 @@
+{
+  "name": "image-search-abstraction-layer",
+  "version": "1.0.0",
+  "description": "Image Search Abstraction Layer Project for FreeCodeCamp.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huwenchao/image-search-abstraction-layer.git"
+  },
+  "keywords": [
+    "FreeCodeCamp"
+  ],
+  "author": "huwenchao",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/huwenchao/image-search-abstraction-layer/issues"
+  },
+  "homepage": "https://github.com/huwenchao/image-search-abstraction-layer#readme",
+  "dependencies": {
+    "dotenv": "^2.0.0",
+    "express": "^4.13.4",
+    "nunjucks": "^2.3.0"
+  }
+}
